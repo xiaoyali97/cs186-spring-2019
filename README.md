@@ -120,7 +120,10 @@ At this point you can connect to the baseball database that is pre-loaded for yo
 	ubuntu@3c0823881763:/$ psql baseball
 	baseball=# \d
 
-Try running a few sample commands in the `psql` console and see what they do:
+Try running a few sample commands in the `psql` console and see what they do.
+For commands with many results, you can use arrow keys to scroll through the
+results, or the spacebar to page through the results (much like the UNIX [`less`](https://www.tutorialspoint.com/unix_commands/less.htm) command). Press `q` to stop viewing the results.
+
 
 ```
 baseball=# \d people
@@ -131,9 +134,6 @@ baseball=# SELECT playerid, namefirst, namelast FROM people;
 ```
 baseball=# SELECT COUNT(*) FROM fielding;
 ```
-
-For queries with many results, you can use arrow keys to scroll through the
-results, or the spacebar to page through the results (much like the UNIX [`less`](https://www.tutorialspoint.com/unix_commands/less.htm) command). Press `q` to stop viewing the results.
 
 ### Notes on using postgres in this container
 Your databases are being created inside the docker container, so **be aware that any database you create in a container, or any changes you make to the `baseball` database, will be reverted when you exit the container.**  
