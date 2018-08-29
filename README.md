@@ -3,6 +3,8 @@
 #### Note: *This homework is to be done individually!*
 #### Due: 11:59PM Friday, 9/7/2018
 
+Before reading this description, please follow the [homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup)].
+
 ### Description
 
 In this homework, we will exercise your newly acquired SQL skills. You will be writing queries against Postgres using public data.
