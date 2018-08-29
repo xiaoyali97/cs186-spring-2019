@@ -3,7 +3,7 @@
 #### Note: *This homework is to be done individually!*
 #### Due: 11:59PM Friday, 9/7/2018
 
-Before reading this description, please follow the [homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup)].
+Before reading this description, please follow the [homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup).
 
 ### Description
 
@@ -19,7 +19,7 @@ First, open a terminal and run docker, **mounting your local directory under /cs
  Then `cd` to a location of your choice *under `/cs186`* to store your homework 1 code. We will assume the location is simply `/cs186`, but you can put it in a subdirectory if you like. From there, clone the `hw1` repository:
 
     ubuntu@3c0823881763:/$ cd /cs186
-    ubuntu@3c0823881763:/cs186$ git clone git@github.com:berkeley-cs186/hw1.git
+    ubuntu@3c0823881763:/cs186$ git clone https://github.com/berkeley-cs186/hw1.git
     ubuntu@3c0823881763:/cs186$ ls hw1
 
 Now, you should be ready to start the homework. Note that any changes you make inside the new `/cs186/hw1` directory will be saved in your machine's filesystem, but they will not be backed up in any way to git. You are responsible to ensure the
