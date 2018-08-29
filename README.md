@@ -25,6 +25,8 @@ First, open a terminal and run docker, **mounting your local directory under /cs
 Now, you should be ready to start the homework. Note that any changes you make inside the new `/cs186/hw1` directory will be saved in your machine's filesystem, but they will not be backed up in any way to git. You are responsible to ensure the
 safety of your files by backing them up somehow, as discussed in [the homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup)!
 
+*Note that if you get an error saying "fatal: could not create work tree dir 'hw1': Permission denied", you may have to run sudo git clone https://github.com/berkeley-cs186/hw1.git instead
+
 ### About the schema
 
 In this homework we will be working with the commonly-used [Lahman baseball statistics database](http://www.seanlahman.com/baseball-archive/statistics/). (Our friends at the San Francisco Giants tell us they use it!) The database contains pitching, hitting, and fielding statistics for Major League Baseball from 1871 through 2017.  It includes data from the two current leagues (American and National), four other "major" leagues (American Association, Union Association, Players League, and Federal League), and the National Association of 1871-1875.
