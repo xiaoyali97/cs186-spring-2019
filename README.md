@@ -1,6 +1,3 @@
-# course-solutions
-CS186 Berkeley private staff repo
-=======
 # Homework 1: SQL queries and scalable algorithms
 #### CS186, UC Berkeley, Fall 2018
 #### Note: *This homework is to be done individually!*
