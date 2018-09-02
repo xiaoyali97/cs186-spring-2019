@@ -260,16 +260,24 @@ yours and ours manually line-by-line, make sure you use the proper ORDER BY
 clause (you can determine this by looking in `test.sh`).
 
 ## Submission
-EDIT: To submit your homework complete the following steps:
+EDIT: To submit your homework, complete the following steps:
 
-Create a new folder called hw1
-Move your hw1.sql file into your new folder (This will look like hw1/hw1.sql)
-Zip the newly created folder with your code in it
-Navigate to the subsection is edX called Homework 1 Submission.
-Open up the section until you see the option to choose a file
-Click Choose File
-Select the zip file that you created in step 3
-Click Submit
+- Create a new folder called hw1
+
+- Move your hw1.sql file into your new folder (This will look like hw1/hw1.sql)
+
+- Zip the newly created folder with your code in it
+
+- Navigate to the subsection is edX called Homework 1 Submission.
+
+- Open up the section until you see the option to choose a file
+
+- Click Choose File
+
+- Select the zip file that you created in step 3
+
+- Click Submit
+
 Congratulations! You finished your first homework!
 
 ## Questions?
