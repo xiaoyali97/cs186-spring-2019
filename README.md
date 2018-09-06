@@ -296,7 +296,7 @@ Double check that the .sql file you want to submit is named `hw1.sql`. If you re
 
 Please use the steps above to submit your homework, and comment in the HW1 Submission Piazza thread if you have submission problems.
 
-If all else fails and it's near the deadline, please use your Berkeley email and send your `hw1.sql` file to cs186berkeley.backup@gmail.com
+If all else fails and it's near the deadline, please use your Berkeley email and send your `hw1.sql` file to cs186berkeley.backup@gmail.com. Title the subject of the email HW1 Submission.
 
 Congratulations! You finished your first homework!
 
