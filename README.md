@@ -294,7 +294,7 @@ Double check that the .sql file you want to submit is named `hw1.sql`. If you re
 7) Select the `hw1.zip` file that you created in step 3. *Note*: You should find the zip file at `<pathname-to-directory-on-your-machine>/hw1`'
 8) Click Submit
 
-Please use the steps above to submit your homework, and post in the comments if you have submission problems.
+Please use the steps above to submit your homework, and comment in the HW1 Submission Piazza thread if you have submission problems.
 
 If all else fails and it's near the deadline, please use your Berkeley email and send your `hw1.sql` file to cs186berkeley.backup@gmail.com
 
