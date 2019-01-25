@@ -1,7 +1,7 @@
 # Homework 1: SQL queries and scalable algorithms
 #### CS186, UC Berkeley, Spring 2019
 #### Note: *This homework is to be done individually!*
-#### Due: 11:59PM Friday, 2/8/2019
+#### Due: 11:59PM Wednesday, 2/6/2019
 
 Before reading this description, please follow the [homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup).
 
