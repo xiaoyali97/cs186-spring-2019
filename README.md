@@ -1,7 +1,7 @@
 # Homework 1: SQL queries and scalable algorithms
-#### CS186, UC Berkeley, Fall 2018
+#### CS186, UC Berkeley, Spring 2019
 #### Note: *This homework is to be done individually!*
-#### Due: 11:59PM Friday, 9/7/2018
+#### Due: 11:59PM Friday, 2/8/2019
 
 Before reading this description, please follow the [homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup).
 
@@ -19,13 +19,13 @@ First, open a terminal and run docker, **mounting your local directory under /cs
  Then `cd` to a location of your choice *under `/cs186`* to store your homework 1 code. We will assume the location is simply `/cs186`, but you can put it in a subdirectory if you like. From there, clone the `hw1` repository:
 
     ubuntu@3c0823881763:/$ cd /cs186
-    ubuntu@3c0823881763:/cs186$ git clone https://github.com/berkeley-cs186/hw1.git
-    ubuntu@3c0823881763:/cs186$ ls hw1
+    ubuntu@3c0823881763:/cs186$ git clone https://github.com/berkeley-cs186/Sp19HW1.git
+    ubuntu@3c0823881763:/cs186$ ls Sp19HW1
 
 Now, you should be ready to start the homework. Note that any changes you make inside the new `/cs186/hw1` directory will be saved in your machine's filesystem, but they will not be backed up in any way to git. You are responsible to ensure the
 safety of your files by backing them up somehow, as discussed in [the homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup)!
 
-*Note that if you get an error saying "fatal: could not create work tree dir 'hw1': Permission denied", you may have to run sudo git clone https://github.com/berkeley-cs186/hw1.git instead
+*Note that if you get an error saying "fatal: could not create work tree dir 'Sp19HW1': Permission denied", you may have to run sudo git clone https://github.com/berkeley-cs186/Sp19HW1.git instead
 
 ### About the schema
 
@@ -260,45 +260,7 @@ yours and ours manually line-by-line, make sure you use the proper ORDER BY
 clause (you can determine this by looking in `test.sh`).
 
 ## Submission
-You will be submitting your `hw1.sql` file to edX for autograding. The homework is due this Friday (9/7) at 11:59 pm.
-
-To submit your homework, please follow the instructions below.
-1) Open a terminal and run docker
-```
-docker run -v <pathname-to-directory-on-your-machine>:/cs186 -it cs186/environment bash
-```
-
-2)  Within the docker container, run the following commands
-```
-ubuntu@3c0823881763:/$ cd /cs186/hw1
-ubuntu@3c0823881763:/cs186/hw1$ git pull origin master
-ubuntu@3c0823881763:/cs186/hw1$ ls
-```
-You should now see `turn_in.py` and `public.key` in the hw1 directory. 
-
-3) Still within the docker container, run the following commands. Replace `<your-student-id>` with your Berkeley student id number.
-```
-ubuntu@3c0823881763:/cs186/hw1$ python3 turn_in.py --student-id <your-student-id>
-ubuntu@3c0823881763:/cs186/hw1$ ls
-```
-You should see "Created hw1.zip" in your terminal output and `hw1.zip` in the hw1 directory. 
-Don't worry that you also see output that starts with `gpg:`. This is expected.
-
-##### Having trouble with this step?
-
-Double check that the .sql file you want to submit is named `hw1.sql`. If you renamed the `hw1.sql` file or moved the file to a different location, the command won't work.
-
-4) Navigate to the subsection in edX called Homework 1 Submission.
-5) Open up the section until you see the option to choose a file
-6) Click Choose Files
-7) Select the `hw1.zip` file that you created in step 3. *Note*: You should find the zip file at `<pathname-to-directory-on-your-machine>/hw1`'
-8) Click Submit
-
-Please use the steps above to submit your homework, and comment in the HW1 Submission Piazza thread if you have submission problems.
-
-If all else fails and it's near the deadline, please use your Berkeley email and send your `hw1.sql` file to cs186berkeley.backup@gmail.com. Title the subject of the email HW1 Submission.
-
-Congratulations! You finished your first homework!
+Submission instructions will be released soon on Piazza and updated here.
 
 ## Questions?
 Please direct all questions to Piazza. Others may have the same question and would benefit from seeing the question and answer! Questions that reveal partial answers should be posted privately.
