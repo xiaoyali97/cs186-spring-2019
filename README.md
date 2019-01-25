@@ -22,7 +22,7 @@ First, open a terminal and run docker, **mounting your local directory under /cs
     ubuntu@3c0823881763:/cs186$ git clone https://github.com/berkeley-cs186/Sp19HW1.git
     ubuntu@3c0823881763:/cs186$ ls Sp19HW1
 
-Now, you should be ready to start the homework. Note that any changes you make inside the new `/cs186/hw1` directory will be saved in your machine's filesystem, but they will not be backed up in any way to git. You are responsible to ensure the
+Now, you should be ready to start the homework. Note that any changes you make inside the new `/cs186/Sp19HW1` directory will be saved in your machine's filesystem, but they will not be backed up in any way to git. You are responsible to ensure the
 safety of your files by backing them up somehow, as discussed in [the homework setup instructions](https://github.com/berkeley-cs186/course/tree/master/hw-setup)!
 
 *Note that if you get an error saying "fatal: could not create work tree dir 'Sp19HW1': Permission denied", you may have to run sudo git clone https://github.com/berkeley-cs186/Sp19HW1.git instead
@@ -95,7 +95,7 @@ At the prompt, type `\q` or `<ctrl>-d` to exit the `psql` prompt, and return bac
 
 
 ### Creating your own databases and using `psql`
-Postgre enables you to have multiple distinct databases supported by the same DBMS server. Each one has a different name. To create your own database, you use the shell command `createdb <mydbname>`. To connect to a particular database, give its name as an argument to the `psql` command:
+Postgres enables you to have multiple distinct databases supported by the same DBMS server. Each one has a different name. To create your own database, you use the shell command `createdb <mydbname>`. To connect to a particular database, give its name as an argument to the `psql` command:
 
 	ubuntu@3c0823881763:/$ createdb test
 	ubuntu@3c0823881763:/$ psql test
@@ -228,6 +228,8 @@ You may need to reference SQL documentation for concepts not covered in class: [
        *Note*: `binid` 0 corresponds to the lowest salaries, and `binid` 9 corresponds to the highest. The ranges are left-inclusive (i.e. `[low, high)`) -- so the `high` value is excluded. For example, if bin 2 has a `high` value of 100000, salaries of 100000 belong in bin 3, and bin 3 should have a `low` value of 100000.
 
        *Note*: The `high` value for bin 9 may be inclusive).
+       
+       *Hint*: You might find special postgres functions that could help you in completing this problem, but know that you can do this simply and with only what we've taught you in class. This question is much easier to debug without those functions.
  
     3. Now let's compute the Year-over-Year change in min, max and average player salary. For each year with recorded salaries after the first, return the `yearid`, `mindiff`, `maxdiff`, and `avgdiff` with respect to the previous year. Order the output by `yearid` in *ascending* order. (You should omit the very first year of recorded salaries from the result.)
 
