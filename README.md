@@ -16,7 +16,7 @@ First, open a terminal and run docker, **mounting your local directory under /cs
 
     $ docker run -v <pathname-to-directory-on-your-machine>:/cs186 -it cs186/environment bash
 
- Then `cd` to a location of your choice *under `/cs186`* to store your homework 1 code. We will assume the location is simply `/cs186`, but you can put it in a subdirectory if you like. From there, clone the `hw1` repository:
+ Then `cd` to a location of your choice *under `/cs186`* to store your homework 1 code. We will assume the location is simply `/cs186`, but you can put it in a subdirectory if you like. From there, clone the `Sp19HW1` repository:
 
     ubuntu@3c0823881763:/$ cd /cs186
     ubuntu@3c0823881763:/cs186$ git clone https://github.com/berkeley-cs186/Sp19HW1.git
@@ -249,7 +249,7 @@ This can help you catch any syntax errors in your SQL.
 
 To help debug your logic, we've provided output from each of the views you need to define in questions 1-4 for the data set you've been given.  Your views should match ours, but note that your SQL queries should work on ANY data set. We reserve the right to test your queries on a (set of) different database(s), so it is *NOT* sufficient to simply return these results in all cases!
 
-To run the test, from within the `hw1` directory:
+To run the test, from within the `Sp19HW1` directory:
 
 	ubuntu@3c0823881763:/$ ./test.sh
 
