@@ -1,57 +1,103 @@
 DROP VIEW IF EXISTS q0, q1i, q1ii, q1iii, q1iv, q2i, q2ii, q2iii, q3i, q3ii, q3iii, q4i, q4ii, q4iii, q4iv, q4v;
 
 -- Question 0
-CREATE VIEW q0(era) 
+CREATE VIEW q0(era)
 AS
-  SELECT 1 -- replace this line
+  SELECT MAX(era)
+  FROM pitching
 ;
 
 -- Question 1i
 CREATE VIEW q1i(namefirst, namelast, birthyear)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, birthyear
+  FROM people
+  WHERE weight > 300
 ;
 
 -- Question 1ii
 CREATE VIEW q1ii(namefirst, namelast, birthyear)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, birthyear
+  FROM people
+  WHERE namefirst ~ ' '
 ;
 
 -- Question 1iii
 CREATE VIEW q1iii(birthyear, avgheight, count)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT birthyear, AVG(height) AS avgheight, COUNT(*)
+  FROM people
+  GROUP BY birthyear
+  ORDER BY birthyear
 ;
 
 -- Question 1iv
 CREATE VIEW q1iv(birthyear, avgheight, count)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT birthyear, AVG(height) AS avgheight, COUNT(*)
+  FROM people
+  GROUP BY birthyear
+  HAVING AVG(height) > 70
+  ORDER BY birthyear
 ;
 
 -- Question 2i
 CREATE VIEW q2i(namefirst, namelast, playerid, yearid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT p.namefirst, p.namelast, p.playerid, h.yearid
+  FROM people as p, hallofFame as h
+  WHERE h.inducted = 'Y' AND h.playerid = p.playerid
+  ORDER BY h.yearid DESC
+
 ;
 
 -- Question 2ii
 CREATE VIEW q2ii(namefirst, namelast, playerid, schoolid, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  WITH schoolca AS (
+    SELECT c.playerid, c.schoolid
+    FROM Schools AS s, CollegePlaying AS c
+    WHERE s.schoolstate = 'CA' AND c.schoolid = s.schoolid
+  )
+  SELECT p.namefirst, p.namelast, p.playerid, s.schoolid, h.yearid
+  FROM people AS p, hallofFame AS h, schoolca AS s
+  WHERE h.inducted = 'Y'
+    AND h.playerid = p.playerid
+    AND p.playerid = s.playerid
+  ORDER BY h.yearid DESC, s.schoolid, p.playerid
 ;
 
 -- Question 2iii
 CREATE VIEW q2iii(playerid, namefirst, namelast, schoolid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  WITH college AS (
+    SELECT p.playerid, CollegePlaying.schoolid, namefirst, namelast
+    FROM people AS p
+    LEFT JOIN CollegePlaying ON p.playerid = CollegePlaying.playerid
+  )
+  SELECT c.playerid, c.namefirst, c.namelast, c.schoolid
+  FROM college AS c, hallofFame AS h
+  WHERE h.inducted = 'Y'
+    AND c.playerid = h.playerid
+  ORDER BY c.playerid DESC, c.schoolid
+
 ;
 
 -- Question 3i
 CREATE VIEW q3i(playerid, namefirst, namelast, yearid, slg)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  WITH annualSlg AS (
+    SELECT playerid, yearid,
+      (h - (h2b + h3b + hr) + 2.0 * h2b + 3.0 * h3b + 4.0 * hr) / ab AS slg
+    FROM Batting
+    WHERE ab > 50
+  )
+  SELECT p.playerid, p.namefirst, p.namelast, a.yearid, a.slg
+  FROM people AS p, annualSlg AS a
+  WHERE p.playerid = a.playerid
+  ORDER BY a.slg DESC, a.yearid, a.playerid
+  LIMIT 10
 ;
 
 -- Question 3ii
@@ -93,4 +139,3 @@ AS
 CREATE VIEW q4v(team, diffAvg) AS
   SELECT 1, 1 -- replace this line
 ;
-
