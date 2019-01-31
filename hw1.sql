@@ -89,7 +89,7 @@ CREATE VIEW q3i(playerid, namefirst, namelast, yearid, slg)
 AS
   WITH annualSlg AS (
     SELECT playerid, yearid,
-      (h - (h2b + h3b + hr) + 2.0 * h2b + 3.0 * h3b + 4.0 * hr) / ab AS slg
+      ((h - (h2b + h3b + hr) + 2.0 * h2b + 3.0 * h3b + 4.0 * hr) / ab)::FLOAT AS slg
     FROM Batting
     WHERE ab > 50
   )
@@ -103,7 +103,22 @@ AS
 -- Question 3ii
 CREATE VIEW q3ii(playerid, namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  WITH yearly AS (
+    SELECT SUM(h) AS h, SUM(h2b) AS h2b, SUM(h3b) AS h3b, SUM(hr) AS hr,
+      SUM(ab) AS ab, playerid
+    FROM Batting
+    GROUP BY playerid
+    HAVING SUM(ab) > 50
+  ), lifeSlg AS (
+    SELECT playerid,
+      ((h - (h2b + h3b + hr) + 2.0 * h2b + 3.0 * h3b + 4.0 * hr) / ab)::FLOAT AS slg
+    FROM yearly
+  )
+  SELECT p.playerid, p.namefirst, p.namelast, l.slg
+  FROM people AS p, lifeSlg AS l
+  WHERE p.playerid = l.playerid
+  ORDER BY l.slg DESC, l.playerid
+  LIMIT 10
 ;
 
 -- Question 3iii
