@@ -130,10 +130,8 @@ AS
   SELECT p.namefirst, p.namelast, l.slg
   FROM lifeSlg AS l, people AS p
   WHERE l.playerid = p.playerid
-    AND l.slg > ANY
-    (SELECT l2.slg
-      FROM lifeSlg AS l2
-      WHERE l2.playerid = 'mayswi01')
+    AND l.slg >
+    (SELECT l2.slg FROM lifeSlg AS l2 WHERE l2.playerid = 'mayswi01')
 ;
 
 -- Question 4i
@@ -153,7 +151,7 @@ AS
       MIN(salary)::INTEGER AS min
     FROM salaries
     WHERE yearid = 2016
-  ), 
+  ),
   SELECT binid, COUNT(salary)
   FROM binned
   GROUP BY binid
@@ -163,15 +161,39 @@ AS
 -- Question 4iii
 CREATE VIEW q4iii(yearid, mindiff, maxdiff, avgdiff)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  WITH yearly AS (
+    SELECT yearid, MIN(salary) AS min, MAX(salary) AS max, AVG(salary) AS avg
+    FROM salaries
+    GROUP BY yearid
+  ), yearDiff AS (
+    SELECT yearid, min - (lag(min) OVER (ORDER BY yearid)) AS mindiff,
+      max - (lag(max) OVER (ORDER BY yearid)) AS maxdiff,
+      avg - (lag(avg) OVER (ORDER BY yearid)) AS avgdiff
+    FROM yearly
+  )
+  SELECT * FROM yearDiff WHERE yearid > (SELECT MIN(yearid) FROM yearDiff)
 ;
 
 -- Question 4iv
 CREATE VIEW q4iv(playerid, namefirst, namelast, salary, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT p.playerid, p.namefirst, p.namelast, s.salary, s.yearid
+  FROM people AS p, salaries AS s
+  WHERE p.playerid = s.playerid
+    AND ((s.salary =
+      (SELECT MAX(s2.salary) FROM salaries AS s2 WHERE yearid = 2000)
+      AND s.yearid = 2000)
+    OR (s.salary =
+      (SELECT MAX(s3.salary) FROM salaries AS s3 WHERE yearid = 2001)
+      AND s.yearid = 2001))
 ;
 -- Question 4v
 CREATE VIEW q4v(team, diffAvg) AS
-  SELECT 1, 1 -- replace this line
+  SELECT a.teamid, MAX(s.salary) - MIN(s.salary) AS diffAvg
+  FROM allstarfull AS a, salaries AS s
+  WHERE a.yearid = 2016
+    AND s.yearid = 2016
+    AND a.playerid = s.playerid
+  GROUP BY a.teamid
+  ORDER BY a.teamid
 ;
