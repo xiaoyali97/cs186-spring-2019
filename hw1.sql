@@ -103,16 +103,12 @@ AS
 -- Question 3ii
 CREATE VIEW q3ii(playerid, namefirst, namelast, lslg)
 AS
-  WITH yearly AS (
-    SELECT SUM(h) AS h, SUM(h2b) AS h2b, SUM(h3b) AS h3b, SUM(hr) AS hr,
-      SUM(ab) AS ab, playerid
+  WITH lifeSlg AS (
+    SELECT ((SUM(h) - (SUM(h2b) + SUM(h3b) + SUM(hr)) + 2.0 * SUM(h2b)
+      + 3.0 * SUM(h3b) + 4.0 * SUM(hr)) / SUM(ab))::FLOAT AS slg, playerid
     FROM Batting
     GROUP BY playerid
     HAVING SUM(ab) > 50
-  ), lifeSlg AS (
-    SELECT playerid,
-      ((h - (h2b + h3b + hr) + 2.0 * h2b + 3.0 * h3b + 4.0 * hr) / ab)::FLOAT AS slg
-    FROM yearly
   )
   SELECT p.playerid, p.namefirst, p.namelast, l.slg
   FROM people AS p, lifeSlg AS l
@@ -124,19 +120,44 @@ AS
 -- Question 3iii
 CREATE VIEW q3iii(namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  WITH lifeSlg AS (
+    SELECT ((SUM(h) - (SUM(h2b) + SUM(h3b) + SUM(hr)) + 2.0 * SUM(h2b)
+      + 3.0 * SUM(h3b) + 4.0 * SUM(hr)) / SUM(ab))::FLOAT AS slg, playerid
+    FROM Batting
+    GROUP BY playerid
+    HAVING SUM(ab) > 50
+  )
+  SELECT p.namefirst, p.namelast, l.slg
+  FROM lifeSlg AS l, people AS p
+  WHERE l.playerid = p.playerid
+    AND l.slg > ANY
+    (SELECT l2.slg
+      FROM lifeSlg AS l2
+      WHERE l2.playerid = 'mayswi01')
 ;
 
 -- Question 4i
 CREATE VIEW q4i(yearid, min, max, avg, stddev)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT yearid, MIN(salary), MAX(salary), AVG(salary), STDDEV(salary)
+  FROM salaries
+  GROUP BY yearid
+  ORDER BY yearid
 ;
 
 -- Question 4ii
 CREATE VIEW q4ii(binid, low, high, count)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  WITH diff AS (
+    SELECT ((MAX(salary) - MIN(salary)) / 10)::INTEGER AS bindiff,
+      MIN(salary)::INTEGER AS min
+    FROM salaries
+    WHERE yearid = 2016
+  ), 
+  SELECT binid, COUNT(salary)
+  FROM binned
+  GROUP BY binid
+  ORDER BY binid
 ;
 
 -- Question 4iii
