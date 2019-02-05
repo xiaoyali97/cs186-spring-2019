@@ -146,21 +146,29 @@ AS
 -- Question 4ii
 CREATE VIEW q4ii(binid, low, high, count)
 AS
-  WITH min_max AS (
-    SELECT MIN(salary) AS min, MAX(salary) AS max
+  WITH min_max(min, max, diff) AS (
+    SELECT MIN(salary) AS min, MAX(salary) AS max,
+    ((MAX(salary) - MIN(salary)) / 10)::INTEGER AS diff
     FROM salaries WHERE yearid = 2016
-  ), histogram AS (
+  ), rawbucket(bucket) AS (
     SELECT
-      width_bucket(salary, min_max.min, min_max.max, 10) AS bucket,
-      MIN(salary)::INTEGER AS low,
-      MAX(salary)::INTEGER AS high,
-      count(salary)
+      width_bucket(salary, min_max.min, min_max.max, 10)
     FROM salaries, min_max
     WHERE yearid = 2016
-    GROUP BY bucket
+  ), histogram(binid) AS (
+    SELECT CASE WHEN bucket <= 10 THEN bucket - 1
+                ELSE 9
+           END
+    FROM rawbucket
+  ), histwrange(binid, low, high) AS (
+    SELECT binid,
+      min + diff * binid AS low,
+      min + diff * (binid + 1) AS high
+    FROM histogram, min_max
   )
-  SELECT bucket - 1 AS binid, low, high, count
-  FROM histogram
+  SELECT binid, low, high, COUNT(*)
+  FROM histwrange
+  GROUP BY binid, low, high
   ORDER BY binid
 ;
 
