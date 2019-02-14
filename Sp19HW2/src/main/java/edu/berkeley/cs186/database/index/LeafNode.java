@@ -148,26 +148,46 @@ class LeafNode extends BPlusNode {
             throw new BPlusTreeException("A duplicate key is inserted.");
         }
 
-        if (!this.isFull()){
-            boolean found = false;
-            int pos = 0;
-            while(!found && pos < keys.size()){
-                if(key.compareTo(keys.get(pos)) < 0){
-                    found = true;
-                } else {
-                    pos++;
-                }
+        //find the position of key to insert
+        boolean found = false;
+        int pos = 0;
+        while(!found && pos < keys.size()){
+            if(key.compareTo(keys.get(pos)) < 0){
+                found = true;
+            } else {
+                pos++;
             }
-            keys.add(pos, key);
-            rids.add(pos, rid);
+        }
+
+        //insert the key and record
+        this.keys.add(pos, key);
+        this.rids.add(pos, rid);
+
+        //first case(no overflow)
+        if (!this.isFull()){
+            sync(transaction);
             return Optional.empty();
         } else {
+            //split the leafnode
+            int order = this.metadata.getOrder();
+            List<DataBox> rightKeys = new ArrayList<>();
+            List<RecordId> rightRids = new ArrayList<>();
 
+            while(keys.size() > order){
+                rightKeys.add(this.keys.remove(order));
+                rightRids.add(this.rids.remove(order));
+            }
+
+            LeafNode newRight = new LeafNode(this.metadata, rightKeys, rightRids, this.rightSibling,
+                    transaction);
+            int rightNodePageNum = newRight.getPage().getPageNum();
+            this.rightSibling = Optional.of(rightNodePageNum);
+            return Optional.of(new Pair<>(rightKeys.get(0), rightNodePageNum));
         }
     }
 
     private boolean isFull(){
-        return keys.size() >= this.metadata.getOrder() * 2 + 1;
+        return this.keys.size() >= this.metadata.getOrder() * 2 + 1;
     }
 
     // See BPlusNode.bulkLoad.

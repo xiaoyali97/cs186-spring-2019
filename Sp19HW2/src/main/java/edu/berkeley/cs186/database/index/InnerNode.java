@@ -83,8 +83,10 @@ class InnerNode extends BPlusNode {
     @Override
     public Optional<Pair<DataBox, Integer>> put(BaseTransaction transaction, DataBox key, RecordId rid)
     throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
-
+       // throw new UnsupportedOperationException("TODO(hw2): implement");
+        int child = numLessThanEqual(key, keys);
+        BPlusNode childNode = getChild(transaction, child);
+        return childNode.put(transaction, key, rid);
     }
 
     // See BPlusNode.bulkLoad.
