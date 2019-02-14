@@ -86,7 +86,57 @@ class InnerNode extends BPlusNode {
        // throw new UnsupportedOperationException("TODO(hw2): implement");
         int child = numLessThanEqual(key, keys);
         BPlusNode childNode = getChild(transaction, child);
-        return childNode.put(transaction, key, rid);
+        Optional<Pair<DataBox, Integer>> result = childNode.put(transaction, key, rid);
+
+        //no leafnode overflow
+        if (!result.isPresent()) {
+            return result;
+        } else {
+            DataBox newKey = result.get().getFirst();
+            int pageNum = result.get().getSecond();
+
+            //find the position of key to insert
+            boolean found = false;
+            int pos = 0;
+            while(!found && pos < keys.size()){
+                if(key.compareTo(keys.get(pos)) < 0){
+                    found = true;
+                } else {
+                    pos++;
+                }
+            }
+
+            //insert the key and record
+            this.keys.add(pos, newKey);
+            this.children.add(pos, pageNum);
+
+            //first case(no overflow)
+            if (!this.isOverflow()){
+                sync(transaction);
+                return Optional.empty();
+            } else {
+                //split the innernode
+                int order = this.metadata.getOrder();
+                List<DataBox> rightKeys = new ArrayList<>();
+                List<Integer> rightChildren = new ArrayList<>();
+
+                DataBox middleKey = keys.remove(order);
+                while(keys.size() > order){
+                    rightKeys.add(this.keys.remove(order));
+                    rightChildren.add(this.children.remove(order));
+                }
+                rightChildren.add(this.children.remove(order));
+
+                InnerNode newRight = new InnerNode(this.metadata, rightKeys, rightChildren, transaction);
+                int rightNodePageNum = newRight.getPage().getPageNum();
+                sync(transaction);
+                return Optional.of(new Pair<>(middleKey, rightNodePageNum));
+            }
+        }
+    }
+
+    private boolean isOverflow(){
+        return this.keys.size() > this.metadata.getOrder() * 2 ;
     }
 
     // See BPlusNode.bulkLoad.

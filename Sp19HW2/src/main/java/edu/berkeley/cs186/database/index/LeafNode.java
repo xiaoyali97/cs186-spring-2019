@@ -164,7 +164,7 @@ class LeafNode extends BPlusNode {
         this.rids.add(pos, rid);
 
         //first case(no overflow)
-        if (!this.isFull()){
+        if (!this.isOverflow()){
             sync(transaction);
             return Optional.empty();
         } else {
@@ -182,12 +182,13 @@ class LeafNode extends BPlusNode {
                     transaction);
             int rightNodePageNum = newRight.getPage().getPageNum();
             this.rightSibling = Optional.of(rightNodePageNum);
+            sync(transaction);
             return Optional.of(new Pair<>(rightKeys.get(0), rightNodePageNum));
         }
     }
 
-    private boolean isFull(){
-        return this.keys.size() >= this.metadata.getOrder() * 2 + 1;
+    private boolean isOverflow(){
+        return this.keys.size() > this.metadata.getOrder() * 2;
     }
 
     // See BPlusNode.bulkLoad.
