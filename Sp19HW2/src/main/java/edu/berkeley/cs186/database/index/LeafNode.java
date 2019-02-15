@@ -11,6 +11,8 @@ import edu.berkeley.cs186.database.databox.Type;
 import edu.berkeley.cs186.database.io.Page;
 import edu.berkeley.cs186.database.table.RecordId;
 
+import static java.lang.Math.ceil;
+
 /**
  * A leaf of a B+ tree. Every leaf in a B+ tree of order d stores between d and
  * 2d (key, record id) pairs and a pointer to its right sibling (i.e. the page
@@ -164,7 +166,7 @@ class LeafNode extends BPlusNode {
         this.rids.add(pos, rid);
 
         //first case(no overflow)
-        if (!this.isOverflow()){
+        if (!this.isOverflow(1.0f)){
             sync(transaction);
             return Optional.empty();
         } else {
@@ -187,8 +189,8 @@ class LeafNode extends BPlusNode {
         }
     }
 
-    private boolean isOverflow(){
-        return this.keys.size() > this.metadata.getOrder() * 2;
+    private boolean isOverflow(float fillFactor){
+        return this.keys.size() > (int)Math.ceil(this.metadata.getOrder() * fillFactor) * 2;
     }
 
     // See BPlusNode.bulkLoad.
@@ -197,7 +199,37 @@ class LeafNode extends BPlusNode {
             Iterator<Pair<DataBox, RecordId>> data,
             float fillFactor)
     throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+
+        while (data.hasNext()) {
+            Pair<DataBox, RecordId> newData = data.next();
+            DataBox key = newData.getFirst();
+            RecordId rid = newData.getSecond();
+            //insert the key and record to the end (assuming keys are sorted)
+            this.keys.add(key);
+            this.rids.add(rid);
+
+            //first case(no overflow)
+            if (this.isOverflow(fillFactor)) {
+                //split the leafnode
+                int pos = keys.size() - 1;
+                List<DataBox> rightKeys = new ArrayList<>();
+                List<RecordId> rightRids = new ArrayList<>();
+
+                rightKeys.add(this.keys.remove(pos));
+                rightRids.add(this.rids.remove(pos));
+
+
+                LeafNode newRight = new LeafNode(this.metadata, rightKeys, rightRids, this.rightSibling,
+                        transaction);
+                int rightNodePageNum = newRight.getPage().getPageNum();
+                this.rightSibling = Optional.of(rightNodePageNum);
+                sync(transaction);
+                return Optional.of(new Pair<>(rightKeys.get(0), rightNodePageNum));
+            }
+        }
+        sync(transaction);
+        return Optional.empty();
     }
 
     // See BPlusNode.remove.

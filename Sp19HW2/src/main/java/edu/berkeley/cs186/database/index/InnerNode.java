@@ -145,7 +145,44 @@ class InnerNode extends BPlusNode {
             Iterator<Pair<DataBox, RecordId>> data,
             float fillFactor)
     throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        while(data.hasNext()){
+            int child = keys.size() - 1;
+            BPlusNode childNode = getChild(transaction, child);
+            Optional<Pair<DataBox, Integer>> result = childNode.bulkLoad(transaction, data, fillFactor);
+
+            //leafnode overflow
+            if (result.isPresent()) {
+                DataBox newKey = result.get().getFirst();
+                int pageNum = result.get().getSecond();
+                //insert the key and record
+                this.keys.add(newKey);
+                this.children.add(pageNum);
+
+                //innernode overflow
+                if (this.isOverflow()){
+                    //split the innernode
+                    int order = this.metadata.getOrder();
+                    List<DataBox> rightKeys = new ArrayList<>();
+                    List<Integer> rightChildren = new ArrayList<>();
+
+                    DataBox middleKey = keys.remove(order);
+                    while(keys.size() > order){
+                        rightKeys.add(this.keys.remove(order));
+                        rightChildren.add(this.children.remove(order));
+                    }
+                    rightChildren.add(this.children.remove(order));
+
+                    InnerNode newRight = new InnerNode(this.metadata, rightKeys, rightChildren, transaction);
+                    int rightNodePageNum = newRight.getPage().getPageNum();
+                    sync(transaction);
+                    return Optional.of(new Pair<>(middleKey, rightNodePageNum));
+                }
+            }
+
+        }
+        sync(transaction);
+        return Optional.empty();
     }
 
     // See BPlusNode.remove.
@@ -154,6 +191,7 @@ class InnerNode extends BPlusNode {
         int child = numLessThanEqual(key, keys);
         BPlusNode childNode = getChild(transaction, child);
         childNode.remove(transaction, key);
+        sync(transaction);
     }
 
     // Helpers ///////////////////////////////////////////////////////////////////
