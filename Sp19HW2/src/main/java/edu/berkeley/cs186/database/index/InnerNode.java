@@ -108,7 +108,7 @@ class InnerNode extends BPlusNode {
 
             //insert the key and record
             this.keys.add(pos, newKey);
-            this.children.add(pos, pageNum);
+            this.children.add(pos+1, pageNum);
 
             //first case(no overflow)
             if (!this.isOverflow()){
@@ -123,9 +123,9 @@ class InnerNode extends BPlusNode {
                 DataBox middleKey = keys.remove(order);
                 while(keys.size() > order){
                     rightKeys.add(this.keys.remove(order));
-                    rightChildren.add(this.children.remove(order));
+                    rightChildren.add(this.children.remove(order+1));
                 }
-                rightChildren.add(this.children.remove(order));
+                rightChildren.add(this.children.remove(order+1));
 
                 InnerNode newRight = new InnerNode(this.metadata, rightKeys, rightChildren, transaction);
                 int rightNodePageNum = newRight.getPage().getPageNum();
@@ -136,7 +136,7 @@ class InnerNode extends BPlusNode {
     }
 
     private boolean isOverflow(){
-        return this.keys.size() > this.metadata.getOrder() * 2 ;
+        return this.keys.size() > this.metadata.getOrder() * 2;
     }
 
     // See BPlusNode.bulkLoad.
@@ -169,9 +169,9 @@ class InnerNode extends BPlusNode {
                     DataBox middleKey = keys.remove(order);
                     while(keys.size() > order){
                         rightKeys.add(this.keys.remove(order));
-                        rightChildren.add(this.children.remove(order));
+                        rightChildren.add(this.children.remove(order+1));
                     }
-                    rightChildren.add(this.children.remove(order));
+                    rightChildren.add(this.children.remove(order+1));
 
                     InnerNode newRight = new InnerNode(this.metadata, rightKeys, rightChildren, transaction);
                     int rightNodePageNum = newRight.getPage().getPageNum();

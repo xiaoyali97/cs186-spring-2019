@@ -190,7 +190,7 @@ class LeafNode extends BPlusNode {
     }
 
     private boolean isOverflow(float fillFactor){
-        return this.keys.size() > (int)Math.ceil(this.metadata.getOrder() * fillFactor) * 2;
+        return this.keys.size() > (int)Math.ceil(this.metadata.getOrder() * fillFactor * 2);
     }
 
     // See BPlusNode.bulkLoad.
@@ -200,7 +200,6 @@ class LeafNode extends BPlusNode {
             float fillFactor)
     throws BPlusTreeException {
         //throw new UnsupportedOperationException("TODO(hw2): implement");
-
         while (data.hasNext()) {
             Pair<DataBox, RecordId> newData = data.next();
             DataBox key = newData.getFirst();

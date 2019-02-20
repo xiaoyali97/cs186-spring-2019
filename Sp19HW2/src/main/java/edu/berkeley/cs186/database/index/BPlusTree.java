@@ -168,7 +168,9 @@ public class BPlusTree implements Closeable {
      */
     public Optional<RecordId> get(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        LeafNode node = this.root.get(transaction, key);
+        return node.getKey(key);
     }
 
     /**
@@ -217,7 +219,8 @@ public class BPlusTree implements Closeable {
      */
     public Iterator<RecordId> scanAll(BaseTransaction transaction) {
         // TODO(hw2): Return a BPlusTreeIterator.
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        return new BPlusTreeIterator(this.root, transaction);
     }
 
     /**
@@ -247,7 +250,9 @@ public class BPlusTree implements Closeable {
     public Iterator<RecordId> scanGreaterEqual(BaseTransaction transaction, DataBox key) {
         typecheck(key);
         // TODO(hw2): Return a BPlusTreeIterator.
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        LeafNode startNode = this.root.get(transaction,key);
+        return new BPlusTreeIterator(startNode, transaction);
     }
 
     /**
@@ -262,7 +267,19 @@ public class BPlusTree implements Closeable {
      */
     public void put(BaseTransaction transaction, DataBox key, RecordId rid) throws BPlusTreeException {
         typecheck(key);
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        Optional<Pair<DataBox, Integer>> result = this.root.put(transaction,key,rid);
+
+        if (result.isPresent()){
+            // Construct the new root.
+            List<DataBox> keys = new ArrayList<>();
+            keys.add(result.get().getFirst());
+            List<Integer> children = new ArrayList<>();
+            children.add(this.root.getPage().getPageNum());
+            children.add(result.get().getSecond());
+            this.root = new InnerNode(this.metadata, keys, children, transaction);
+        }
+
     }
 
     /**
@@ -282,7 +299,25 @@ public class BPlusTree implements Closeable {
      */
     public void bulkLoad(BaseTransaction transaction, Iterator<Pair<DataBox, RecordId>> data,
                          float fillFactor) throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        Iterator<RecordId> iter = scanAll(transaction);
+        if (iter.hasNext()){
+            throw new BPlusTreeException("The tree is not empty.");
+        }
+        while(data.hasNext()) {
+            Optional<Pair<DataBox, Integer>> result = this.root.bulkLoad(transaction, data, fillFactor);
+
+            //leafnode overflow
+            if (result.isPresent()) {
+                // Construct the new root.
+                List<DataBox> keys = new ArrayList<>();
+                keys.add(result.get().getFirst());
+                List<Integer> children = new ArrayList<>();
+                children.add(this.root.getPage().getPageNum());
+                children.add(result.get().getSecond());
+                this.root = new InnerNode(this.metadata, keys, children, transaction);
+            }
+        }
     }
 
     /**
@@ -299,7 +334,8 @@ public class BPlusTree implements Closeable {
      */
     public void remove(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        this.root.remove(transaction, key);
     }
 
     // Helpers /////////////////////////////////////////////////////////////////
@@ -396,15 +432,48 @@ public class BPlusTree implements Closeable {
     // Iterator ////////////////////////////////////////////////////////////////
     private class BPlusTreeIterator implements Iterator<RecordId> {
         // TODO(hw2): Add whatever fields and constructors you want here.
+        private LeafNode currNode;
+        private Iterator<RecordId> currIter;
+        private BaseTransaction transaction;
+
+        public BPlusTreeIterator(BPlusNode node, BaseTransaction transaction){
+            this.currNode = node.getLeftmostLeaf(transaction);
+            this.currIter = this.currNode.scanAll();
+            this.transaction = transaction;
+        }
 
         @Override
         public boolean hasNext() {
-            throw new UnsupportedOperationException("TODO(hw2): implement");
+            //throw new UnsupportedOperationException("TODO(hw2): implement");
+            if (this.currIter.hasNext()){
+                return true;
+            } else {
+                Optional<LeafNode> rightNode = this.currNode.getRightSibling(this.transaction);
+                if (rightNode.isPresent()){
+                    this.currNode = rightNode.get();
+                    this.currIter = this.currNode.scanAll();
+                    return hasNext();
+                } else {
+                    return false;
+                }
+            }
         }
 
         @Override
         public RecordId next() {
-            throw new UnsupportedOperationException("TODO(hw2): implement");
+            //throw new UnsupportedOperationException("TODO(hw2): implement");
+            if (this.currIter.hasNext()){
+                return currIter.next();
+            } else {
+                Optional<LeafNode> rightNode = this.currNode.getRightSibling(this.transaction);
+                if (rightNode.isPresent()){
+                    this.currNode = rightNode.get();
+                    this.currIter = this.currNode.scanAll();
+                    return next();
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
         }
     }
 }
