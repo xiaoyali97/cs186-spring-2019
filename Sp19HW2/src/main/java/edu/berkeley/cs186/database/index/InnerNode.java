@@ -147,7 +147,7 @@ class InnerNode extends BPlusNode {
     throws BPlusTreeException {
         //throw new UnsupportedOperationException("TODO(hw2): implement");
         while(data.hasNext()){
-            int child = keys.size() - 1;
+            int child = children.size() - 1;
             BPlusNode childNode = getChild(transaction, child);
             Optional<Pair<DataBox, Integer>> result = childNode.bulkLoad(transaction, data, fillFactor);
 

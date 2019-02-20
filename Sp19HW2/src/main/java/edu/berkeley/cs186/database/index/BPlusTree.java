@@ -220,7 +220,7 @@ public class BPlusTree implements Closeable {
     public Iterator<RecordId> scanAll(BaseTransaction transaction) {
         // TODO(hw2): Return a BPlusTreeIterator.
         //throw new UnsupportedOperationException("TODO(hw2): implement");
-        return new BPlusTreeIterator(this.root, transaction);
+        return new BPlusTreeIterator(this.root, transaction, Optional.empty());
     }
 
     /**
@@ -252,7 +252,7 @@ public class BPlusTree implements Closeable {
         // TODO(hw2): Return a BPlusTreeIterator.
         //throw new UnsupportedOperationException("TODO(hw2): implement");
         LeafNode startNode = this.root.get(transaction,key);
-        return new BPlusTreeIterator(startNode, transaction);
+        return new BPlusTreeIterator(startNode, transaction, Optional.of(key));
     }
 
     /**
@@ -436,9 +436,13 @@ public class BPlusTree implements Closeable {
         private Iterator<RecordId> currIter;
         private BaseTransaction transaction;
 
-        public BPlusTreeIterator(BPlusNode node, BaseTransaction transaction){
+        public BPlusTreeIterator(BPlusNode node, BaseTransaction transaction, Optional<DataBox> key){
             this.currNode = node.getLeftmostLeaf(transaction);
-            this.currIter = this.currNode.scanAll();
+            if (key.isPresent()){
+                this.currIter = this.currNode.scanGreaterEqual(key.get());
+            } else {
+                this.currIter = this.currNode.scanAll();
+            }
             this.transaction = transaction;
         }
 

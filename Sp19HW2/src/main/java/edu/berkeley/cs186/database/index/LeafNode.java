@@ -211,7 +211,7 @@ class LeafNode extends BPlusNode {
             //first case(no overflow)
             if (this.isOverflow(fillFactor)) {
                 //split the leafnode
-                int pos = keys.size() - 1;
+                int pos = this.keys.size() - 1;
                 List<DataBox> rightKeys = new ArrayList<>();
                 List<RecordId> rightRids = new ArrayList<>();
 
@@ -424,7 +424,14 @@ class LeafNode extends BPlusNode {
         Page page  = metadata.getAllocator().fetchPage(transaction, pageNum);
         Buffer b = page.getBuffer(transaction);
         b.get();
-        Optional<Integer> rightSiblingID = Optional.of(b.getInt());
+
+        //check if node has a rightSibling
+        int rightSibling = b.getInt();
+        Optional<Integer> rightSiblingID = Optional.of(rightSibling);
+        if (rightSibling == -1){
+            rightSiblingID = Optional.empty();
+        }
+
         int numPairs = b.getInt();
         Type keyType = metadata.getKeySchema();
         List<DataBox> newKeys = new ArrayList<>();
