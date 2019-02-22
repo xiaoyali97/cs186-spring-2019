@@ -11,6 +11,8 @@ import edu.berkeley.cs186.database.databox.Type;
 import edu.berkeley.cs186.database.io.Page;
 import edu.berkeley.cs186.database.table.RecordId;
 
+import static java.lang.Math.ceil;
+
 /**
  * A leaf of a B+ tree. Every leaf in a B+ tree of order d stores between d and
  * 2d (key, record id) pairs and a pointer to its right sibling (i.e. the page
@@ -148,26 +150,47 @@ class LeafNode extends BPlusNode {
             throw new BPlusTreeException("A duplicate key is inserted.");
         }
 
-        if (!this.isFull()){
-            boolean found = false;
-            int pos = 0;
-            while(!found && pos < keys.size()){
-                if(key.compareTo(keys.get(pos)) < 0){
-                    found = true;
-                } else {
-                    pos++;
-                }
+        //find the position of key to insert
+        boolean found = false;
+        int pos = 0;
+        while(!found && pos < keys.size()){
+            if(key.compareTo(keys.get(pos)) < 0){
+                found = true;
+            } else {
+                pos++;
             }
-            keys.add(pos, key);
-            rids.add(pos, rid);
+        }
+
+        //insert the key and record
+        this.keys.add(pos, key);
+        this.rids.add(pos, rid);
+
+        //first case(no overflow)
+        if (!this.isOverflow(1.0f)){
+            sync(transaction);
             return Optional.empty();
         } else {
+            //split the leafnode
+            int order = this.metadata.getOrder();
+            List<DataBox> rightKeys = new ArrayList<>();
+            List<RecordId> rightRids = new ArrayList<>();
 
+            while(keys.size() > order){
+                rightKeys.add(this.keys.remove(order));
+                rightRids.add(this.rids.remove(order));
+            }
+
+            LeafNode newRight = new LeafNode(this.metadata, rightKeys, rightRids, this.rightSibling,
+                    transaction);
+            int rightNodePageNum = newRight.getPage().getPageNum();
+            this.rightSibling = Optional.of(rightNodePageNum);
+            sync(transaction);
+            return Optional.of(new Pair<>(rightKeys.get(0), rightNodePageNum));
         }
     }
 
-    private boolean isFull(){
-        return keys.size() >= this.metadata.getOrder() * 2 + 1;
+    private boolean isOverflow(float fillFactor){
+        return this.keys.size() > (int)Math.ceil(this.metadata.getOrder() * fillFactor * 2);
     }
 
     // See BPlusNode.bulkLoad.
@@ -176,7 +199,36 @@ class LeafNode extends BPlusNode {
             Iterator<Pair<DataBox, RecordId>> data,
             float fillFactor)
     throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        //throw new UnsupportedOperationException("TODO(hw2): implement");
+        while (data.hasNext()) {
+            Pair<DataBox, RecordId> newData = data.next();
+            DataBox key = newData.getFirst();
+            RecordId rid = newData.getSecond();
+            //insert the key and record to the end (assuming keys are sorted)
+            this.keys.add(key);
+            this.rids.add(rid);
+
+            //first case(no overflow)
+            if (this.isOverflow(fillFactor)) {
+                //split the leafnode
+                int pos = this.keys.size() - 1;
+                List<DataBox> rightKeys = new ArrayList<>();
+                List<RecordId> rightRids = new ArrayList<>();
+
+                rightKeys.add(this.keys.remove(pos));
+                rightRids.add(this.rids.remove(pos));
+
+
+                LeafNode newRight = new LeafNode(this.metadata, rightKeys, rightRids, this.rightSibling,
+                        transaction);
+                int rightNodePageNum = newRight.getPage().getPageNum();
+                this.rightSibling = Optional.of(rightNodePageNum);
+                sync(transaction);
+                return Optional.of(new Pair<>(rightKeys.get(0), rightNodePageNum));
+            }
+        }
+        sync(transaction);
+        return Optional.empty();
     }
 
     // See BPlusNode.remove.
@@ -372,7 +424,14 @@ class LeafNode extends BPlusNode {
         Page page  = metadata.getAllocator().fetchPage(transaction, pageNum);
         Buffer b = page.getBuffer(transaction);
         b.get();
-        Optional<Integer> rightSiblingID = Optional.of(b.getInt());
+
+        //check if node has a rightSibling
+        int rightSibling = b.getInt();
+        Optional<Integer> rightSiblingID = Optional.of(rightSibling);
+        if (rightSibling == -1){
+            rightSiblingID = Optional.empty();
+        }
+
         int numPairs = b.getInt();
         Type keyType = metadata.getKeySchema();
         List<DataBox> newKeys = new ArrayList<>();
