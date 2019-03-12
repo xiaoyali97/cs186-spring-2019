@@ -50,25 +50,100 @@ public class SortMergeOperator extends JoinOperator {
 
         //private String leftTableName;
         //private String rightTableName;
-        //private RecordIterator leftIterator;
-        //private RecordIterator rightIterator;
-        //private Record leftRecord;
-        //private Record nextRecord;
-        //private Record rightRecord;
-        //private boolean marked;
+        private RecordIterator leftIterator;
+        private RecordIterator rightIterator;
+        private Record leftRecord;
+        private Record nextRecord;
+        private Record rightRecord;
+        private boolean marked;
+        private Comparator<Record> comparator = new LR_RecordComparator();
 
         public SortMergeIterator() throws QueryPlanException, DatabaseException {
             super();
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            SortOperator leftSortOp = new SortOperator(SortMergeOperator.this.getTransaction(),
+                    this.getLeftTableName(), new LeftRecordComparator());
+            leftIterator = SortMergeOperator.this.getTableIterator(leftSortOp.sort());
+
+            SortOperator rightSortOp = new SortOperator(SortMergeOperator.this.getTransaction(),
+                    this.getRightTableName(), new RightRecordComparator());
+            rightIterator = SortMergeOperator.this.getTableIterator(rightSortOp.sort());
+
+            leftRecord = leftIterator.hasNext() ? leftIterator.next() : null;
+            rightRecord = rightIterator.hasNext() ? rightIterator.next() : null;
+            marked = false;
+            try {
+                this.fetchNext();
+            } catch (DatabaseException e) {
+                this.nextRecord = null;
+            }
         }
 
+        private void fetchNext() throws DatabaseException {
+            if (leftRecord == null) {
+                throw new DatabaseException("All done!");
+            }
+            this.nextRecord = null;
+            do {
+                if (!marked) {
+                    while(comparator.compare(leftRecord, rightRecord) < 0) {
+                        advanceLeft();
+                    }
+                    while(comparator.compare(leftRecord, rightRecord) > 0) {
+                        advanceRight();
+                    }
+
+                    rightIterator.mark();
+                    marked = true;
+                }
+                if (rightRecord != null) {
+                    if (comparator.compare(leftRecord, rightRecord) == 0) {
+                        List<DataBox> leftValues = new ArrayList<>(this.leftRecord.getValues());
+                        List<DataBox> rightValues = new ArrayList<>(this.rightRecord.getValues());
+                        leftValues.addAll(rightValues);
+                        this.nextRecord = new Record(leftValues);
+                        rightRecord = rightIterator.hasNext() ? rightIterator.next() : null;
+                    } else {
+                        resetRightRecord();
+                        advanceLeft();
+                        marked = false;
+                    }
+                } else if (leftIterator.hasNext()) {
+                    resetRightRecord();
+                    advanceLeft();
+                    marked = false;
+                } else {
+                    //done
+                    leftRecord = null;
+                    return;
+                }
+
+            } while(!hasNext());
+        }
+
+        private void resetRightRecord() {
+            this.rightIterator.reset();
+            rightRecord = rightIterator.next();
+            rightIterator.mark();
+        }
+
+        private void advanceLeft() throws DatabaseException{
+            if (!leftIterator.hasNext()) { throw new DatabaseException("All Done!"); }
+            leftRecord = leftIterator.next();
+        }
+
+        private void advanceRight() throws DatabaseException {
+            if (!rightIterator.hasNext()) { throw new DatabaseException("All Done!"); }
+            rightRecord = rightIterator.hasNext()? rightIterator.next() : null;
+        }
         /**
          * Checks if there are more record(s) to yield
          *
          * @return true if this iterator has another record to yield, otherwise false
          */
         public boolean hasNext() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            return nextRecord != null;
         }
 
         /**
@@ -78,7 +153,18 @@ public class SortMergeOperator extends JoinOperator {
          * @throws NoSuchElementException if there are no more Records to yield
          */
         public Record next() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (!this.hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Record nextRecord = this.nextRecord;
+            try {
+                this.fetchNext();
+            } catch (DatabaseException e) {
+                this.nextRecord = null;
+            }
+            return nextRecord;
         }
 
         public void remove() {
