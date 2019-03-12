@@ -71,7 +71,16 @@ public class SortOperator {
      * size of the buffer, but it is done this way for ease.
      */
     public Run sortRun(Run run) throws DatabaseException {
-        throw new UnsupportedOperationException("TODO(hw3): implement");
+        //throw new UnsupportedOperationException("TODO(hw3): implement");
+        List<Record> elements = new ArrayList<>();
+        Iterator<Record> recordIter = run.iterator();
+        while (recordIter.hasNext()){
+            elements.add(recordIter.next());
+        }
+        Run toRetrun = new Run();
+        elements.sort(SortOperator.this.comparator);
+        toRetrun.addRecords(elements);
+        return toRetrun;
     }
 
     /**
@@ -83,7 +92,28 @@ public class SortOperator {
      * sorting on currently unmerged from run i.
      */
     public Run mergeSortedRuns(List<Run> runs) throws DatabaseException {
-        throw new UnsupportedOperationException("TODO(hw3): implement");
+        //throw new UnsupportedOperationException("TODO(hw3): implement");
+        PriorityQueue<Pair<Record, Integer>> nextElem = new PriorityQueue<>(new RecordPairComparator());
+        List<Iterator<Record>> runIters = new ArrayList<>();
+        Run toReturn = new Run();
+        int i = 0;
+        while (!runs.isEmpty()) {
+            runIters.add(i, runs.remove(0).iterator());
+            if (runIters.get(i).hasNext()) {
+                nextElem.add(new Pair<>(runIters.get(i).next(), i));
+            }
+            i++;
+        }
+        while (!nextElem.isEmpty()) {
+            Pair<Record, Integer> next = nextElem.poll();
+            int j = next.getSecond();
+            toReturn.addRecord(next.getFirst().getValues());
+            if (runIters.get(j).hasNext()) {
+                nextElem.add(new Pair<>(runIters.get(j).next(), j));
+            }
+        }
+
+        return toReturn;
     }
 
     /**
@@ -92,7 +122,17 @@ public class SortOperator {
      * of the input runs at a time.
      */
     public List<Run> mergePass(List<Run> runs) throws DatabaseException {
-        throw new UnsupportedOperationException("TODO(hw3): implement");
+        //throw new UnsupportedOperationException("TODO(hw3): implement");
+        List<Run> toReturn = new LinkedList<>();
+        while (runs.size() > 0) {
+            List<Run> toMerge = new ArrayList<>();
+            while (toMerge.size() < this.numBuffers - 1 & runs.size() > 0) {
+                toMerge.add(runs.remove(0));
+            }
+            toReturn.add(mergeSortedRuns(toMerge));
+        }
+
+        return toReturn;
     }
 
     /**
@@ -101,8 +141,28 @@ public class SortOperator {
      * Returns the name of the table that backs the final run.
      */
     public String sort() throws DatabaseException {
-        throw new UnsupportedOperationException("TODO(hw3): implement");
+        //throw new UnsupportedOperationException("TODO(hw3): implement");
+
+        Iterator<Record> allRecords = transaction.getRecordIterator(tableName);
+        int pageSize = transaction.getNumEntriesPerPage(tableName);
+        List<Run> sortedRuns = new LinkedList<>();
+        while (allRecords.hasNext()) {
+            Run run = new Run();
+            int i = 0;
+            while (i < numBuffers * pageSize & allRecords.hasNext()) {
+                run.addRecord(allRecords.next().getValues());
+                i++;
+            }
+            sortedRuns.add(sortRun(run));
+        }
+
+        sortedRuns = mergePass(sortedRuns);
+        while (sortedRuns.size() > 1) {
+            sortedRuns = mergePass(sortedRuns);
+        }
+        return sortedRuns.get(0).tempTableName;
     }
+
 
     public Iterator<Record> iterator() throws DatabaseException {
         if (sortedTableName == null) {
@@ -114,9 +174,9 @@ public class SortOperator {
     private class RecordPairComparator implements Comparator<Pair<Record, Integer>> {
         public int compare(Pair<Record, Integer> o1, Pair<Record, Integer> o2) {
             return SortOperator.this.comparator.compare(o1.getFirst(), o2.getFirst());
-
         }
     }
+
     public Run createRun() throws DatabaseException {
         return new Run();
     }

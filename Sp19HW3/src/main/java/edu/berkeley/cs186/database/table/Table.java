@@ -490,6 +490,11 @@ public class Table implements Closeable {
      */
     public class RIDPageIterator implements BacktrackingIterator<RecordId> {
         //member variables go here
+        private byte[] bitmap;
+        private int pageNum;
+        private short currEntryNum = 0;
+        private short prevEntryNum = -1;
+        private short markedIndex = -1;
 
         /**
         * The following method signature is provided for guidance, but not necessary. Feel free to
@@ -499,23 +504,50 @@ public class Table implements Closeable {
         // You do not need to manipulate the transaction parameter, just pass it
         // into any method that requires a transaction that you need to call.
         public RIDPageIterator(BaseTransaction transaction, Page page) {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            this.bitmap = getBitMap(transaction, page);
+            this.pageNum = page.getPageNum();
         }
 
         public boolean hasNext() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (currEntryNum < numRecordsPerPage) {
+                if (Bits.getBit(this.bitmap, currEntryNum) == Bits.Bit.ONE) {
+                    return true;
+                } else {
+                    currEntryNum++;
+                    return hasNext();
+                }
+            } else {
+                return false;
+            }
         }
 
         public RecordId next() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (!hasNext()){
+                throw new NoSuchElementException("End of Page!");
+            }
+            RecordId toReturn = new RecordId(this.pageNum, this.currEntryNum);
+            this.prevEntryNum = this.currEntryNum;
+            this.currEntryNum++;
+            return toReturn;
         }
 
         public void mark() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (this.currEntryNum == 0 || this.currEntryNum < this.markedIndex) {
+                return;
+            }
+            this.markedIndex = this.prevEntryNum;
         }
 
         public void reset() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (this.markedIndex == -1) {
+                return;
+            }
+            this.currEntryNum = this.markedIndex;
         }
     }
 
@@ -587,8 +619,7 @@ public class Table implements Closeable {
         RIDBlockIterator(BaseTransaction transaction, BacktrackingIterator<Page> pageIter) {
             this.transaction = transaction;
             this.pageIter = pageIter;
-
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
             //if you want to add anything to this constructor, feel free to
         }
 
@@ -626,12 +657,28 @@ public class Table implements Closeable {
         }
 
         public boolean hasNext() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (this.recordIter == null || !this.recordIter.hasNext()) {
+                if (this.pageIter.hasNext()) {
+                    this.recordIter = new RIDPageIterator(transaction, pageIter.next());
+                    return hasNext();
+                } else {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public RecordId next() {
-            throw new UnsupportedOperationException("TODO(hw3): implement");
+            //throw new UnsupportedOperationException("TODO(hw3): implement");
+            if (!hasNext()) {
+                throw new NoSuchElementException("End of Block!");
+            }
+
+            this.prevRecordIter = this.recordIter;
+            return this.recordIter.next();
         }
+
 
         /**
          * Marks the last recordId returned by next().
