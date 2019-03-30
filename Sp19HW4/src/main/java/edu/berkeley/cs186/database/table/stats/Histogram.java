@@ -116,16 +116,58 @@ public class Histogram {
      *              final bucket is inclusive on the last value.
      */
     public void buildHistogram(BaseTransaction transaction, Table table, int attribute) {
-        // TODO: HW4 implement
-
         //1. first calculate the min and the max values
+        calMinMax(transaction, table, attribute);
 
         //2. calculate the width of each bin
+        this.width = (this.maxValue - this.minValue) / buckets.length;
 
         //3. create each bucket object
+        Float currVal = this.minValue;
+        for (int i = 0; i < buckets.length; ++i) {
+            buckets[i] = new Bucket<>(currVal, currVal + this.width);
+            currVal = currVal + this.width;
+        }
 
         //4. populate the data using the increment(value) method
-        throw new UnsupportedOperationException("TODO(hw4): implement");
+        populateData(transaction, table, attribute);
+
+        //throw new UnsupportedOperationException("TODO(hw4): implement");
+    }
+
+    private void populateData(BaseTransaction transaction, Table table, int attribute){
+        Iterator<Record> recordIter = table.iterator(transaction);
+        Record curr;
+        float value;
+        int index;
+
+        while(recordIter.hasNext()){
+            curr = recordIter.next();
+            value = quantization(curr, attribute);
+            index = bucketIndex(value);
+            buckets[index].increment(value);
+        }
+    }
+
+    private void calMinMax(BaseTransaction transaction, Table table, int attribute){
+        Iterator<Record> recordIter = table.iterator(transaction);
+        Record curr;
+        float value;
+
+        this.minValue = Float.POSITIVE_INFINITY;
+        this.maxValue = Float.NEGATIVE_INFINITY;
+
+        while(recordIter.hasNext()){
+            curr = recordIter.next();
+            value = quantization(curr, attribute);
+            if (value < this.minValue) {
+                this.minValue = value;
+            }
+
+            if (value > this.maxValue){
+                this.maxValue = value;
+            }
+        }
     }
 
     private int bucketIndex(float v) {
@@ -271,12 +313,16 @@ public class Histogram {
      */
     private float [] allEquality(float qvalue) {
         float [] result = new float[this.buckets.length];
-
-        // TODO: HW4 implement;
-
-        throw new UnsupportedOperationException("TODO(hw4): implement");
-
-        // return result;
+        //throw new UnsupportedOperationException("TODO(hw4): implement");
+        int index = bucketIndex(qvalue);
+        for (int i = 0; i < result.length; i++){
+            if (i == index){
+                result[index] = 1.0f / buckets[index].getDistinctCount();
+            } else {
+                result[i] = 0.0f;
+            }
+        }
+        return result;
     }
 
     /**
@@ -285,12 +331,16 @@ public class Histogram {
       */
     private float [] allNotEquality(float qvalue) {
         float [] result = new float[this.buckets.length];
-
-        // TODO: HW4 implement;
-
-        throw new UnsupportedOperationException("TODO(hw4): implement");
-
-        // return result;
+        //throw new UnsupportedOperationException("TODO(hw4): implement");
+        int index = bucketIndex(qvalue);
+        for (int i = 0; i < result.length; i++){
+            if (i == index){
+                result[index] = 1.0f - 1.0f / buckets[index].getDistinctCount();
+            } else {
+                result[i] = 1.0f;
+            }
+        }
+        return result;
     }
 
     /**
@@ -299,12 +349,19 @@ public class Histogram {
      */
     private float [] allGreaterThan(float qvalue) {
         float [] result = new float[this.buckets.length];
+        //throw new UnsupportedOperationException("TODO(hw4): implement");
 
-        // TODO: HW4 implement;
-
-        throw new UnsupportedOperationException("TODO(hw4): implement");
-
-        // return result;
+        int index = bucketIndex(qvalue);
+        for (int i = 0; i < result.length; i++){
+            if (i < index){
+                result[i] = 0.0f;
+            } else if (i == index) {
+                result[index] = (buckets[index].getEnd() - qvalue) / this.width;
+            } else {
+                result[i] = 1.0f;
+            }
+        }
+        return result;
     }
 
     /**
@@ -313,12 +370,20 @@ public class Histogram {
       */
     private float [] allLessThan(float qvalue) {
         float [] result = new float[this.buckets.length];
+        //throw new UnsupportedOperationException("TODO(hw4): implement");
 
-        // TODO: HW4 implement;
+        int index = bucketIndex(qvalue);
+        for (int i = 0; i < result.length; i++){
+            if (i < index){
+                result[i] = 1.0f;
+            } else if (i == index) {
+                result[index] = (qvalue - buckets[index].getStart()) / this.width;
+            } else {
+                result[i] = 0.0f;
+            }
+        }
 
-        throw new UnsupportedOperationException("TODO(hw4): implement");
-
-        // return result;
+        return result;
     }
 
     // Cost Estimation ///////////////////////////////////////////////////////////////////
