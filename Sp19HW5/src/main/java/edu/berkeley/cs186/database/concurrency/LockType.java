@@ -85,8 +85,7 @@ public enum LockType {
             if (substitute == SIX) return true;
             else return false;
         } else if (required == SIX) {
-            if (substitute == IX) return true;
-            else return false;
+            return false;
         } else {
             return true;
         }
