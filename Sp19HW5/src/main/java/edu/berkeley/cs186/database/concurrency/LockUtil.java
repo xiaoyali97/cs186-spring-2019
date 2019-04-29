@@ -21,8 +21,34 @@ public class LockUtil {
      */
     public static void ensureSufficientLockHeld(BaseTransaction transaction, LockContext lockContext,
             LockType lockType) {
-        throw new UnsupportedOperationException("TODO(hw5_part2): implement");
-    }
+        //throw new UnsupportedOperationException("TODO(hw5_part2): implement");
+        if (transaction == null) {
+            return;
+        }
 
-    // TODO(hw5): add helper methods as you see fit
+        if (LockType.substitutable(lockContext.getEffectiveLockType(transaction), lockType)) {
+            return;
+        }
+
+        //ensure parent has permission
+        LockType requiredParentLock = LockType.parentLock(lockType);
+        LockContext parentContext = lockContext.parentContext();
+        if (parentContext != null) {
+            ensureSufficientLockHeld(transaction, parentContext, requiredParentLock);
+        }
+
+        //when got here, assume had all required parent locks
+        //if NL, accquire; else promote
+        if (lockContext.getEffectiveLockType(transaction).equals(LockType.NL)) {
+            lockContext.acquire(transaction, lockType);
+        } else {
+            //try to promote
+            try {
+                lockContext.promote(transaction, lockType);
+            } catch (InvalidLockException e){
+                lockContext.escalate(transaction);
+                ensureSufficientLockHeld(transaction, lockContext, lockType);
+            }
+        }
+    }
 }

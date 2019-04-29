@@ -197,6 +197,12 @@ public class Database {
             assert(this.active);
 
             // TODO(hw5_part2): release all locks
+            List<Lock> lockList = lockManager.getLocks(this);
+            Collections.reverse(lockList);
+            for (Lock lock: lockList) {
+                LockContext currContext = LockContext.fromResourceName(lockManager, lock.name);
+                currContext.release(this);
+            }
 
             deleteAllTempTables();
             this.active = false;
@@ -389,7 +395,7 @@ public class Database {
 
         public Iterator<Record> sortedScan(String tableName, String columnName) throws DatabaseException {
             Table tab = getTable(tableName);
-            // TODO(hw5_part2): scan locking
+            LockUtil.ensureSufficientLockHeld(this, getTableContext(tableName), LockType.S);
             try {
                 Pair<String, BPlusTree> index = resolveIndexFromName(tableName, columnName);
                 return new RecordIterator(this, tab, index.getSecond().scanAll(this));
@@ -408,7 +414,7 @@ public class Database {
                                                DataBox startValue) throws DatabaseException {
             Table tab = getTable(tableName);
             Pair<String, BPlusTree> index = resolveIndexFromName(tableName, columnName);
-            // TODO(hw5_part2): scan locking
+            LockUtil.ensureSufficientLockHeld(this, getTableContext(tableName), LockType.S);
             return new RecordIterator(this, tab, index.getSecond().scanGreaterEqual(this, startValue));
         }
 
