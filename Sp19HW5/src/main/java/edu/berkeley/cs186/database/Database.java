@@ -379,7 +379,8 @@ public class Database {
 
             Path path = Paths.get(Database.this.fileDir, "temp", tempTableName + Table.FILENAME_EXTENSION);
             LockContext lockContext = lockManager.orphanContext("temp-" + tempTableName);
-            // TODO(hw5_part2): more efficient locking on temporary tables
+            lockContext.disableChildLocks();
+            LockUtil.ensureSufficientLockHeld(this, lockContext, LockType.X);
             this.tempTables.put(tempTableName, newTable(tempTableName, schema, path.toString(), lockContext,
                                 this));
         }

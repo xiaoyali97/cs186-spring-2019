@@ -89,8 +89,6 @@ public class BPlusTree implements Closeable {
     public BPlusTree(String filename, Type keySchema, int order, LockContext lockContext,
                      BaseTransaction transaction)
     throws BPlusTreeException {
-        // TODO(hw5_part2): B+ tree locking
-
         // Sanity checks.
         if (order < 0) {
             String msg = String.format(
@@ -109,7 +107,7 @@ public class BPlusTree implements Closeable {
         }
 
         this.lockContext = lockContext;
-
+        this.lockContext.disableChildLocks();
         // Initialize the page allocator.
         this.allocator = new PageAllocator(this.lockContext, filename, true, transaction);
         this.metadata = new BPlusTreeMetadata(allocator, keySchema, order);
@@ -131,10 +129,10 @@ public class BPlusTree implements Closeable {
 
     /** Read a B+ tree that was previously serialized to filename. */
     public BPlusTree(String filename, LockContext lockContext, BaseTransaction transaction) {
-        // TODO(hw5_part2): B+ tree locking
+
 
         this.lockContext = lockContext;
-
+        this.lockContext.disableChildLocks();
         // Initialize the page allocator and fetch the header page.
         this.allocator = new PageAllocator(this.lockContext, filename, false, transaction);
         Page headerPage = allocator.fetchPage(transaction, 0);
@@ -172,7 +170,7 @@ public class BPlusTree implements Closeable {
      */
     public Optional<RecordId> get(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.S);
         return Optional.empty();
     }
 
@@ -185,7 +183,7 @@ public class BPlusTree implements Closeable {
      */
     public Iterator<RecordId> scanEqual(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.S);
         Optional<RecordId> rid = get(transaction, key);
         if (rid.isPresent()) {
             ArrayList<RecordId> l = new ArrayList<>();
@@ -222,7 +220,7 @@ public class BPlusTree implements Closeable {
      * memory will receive 0 points.
      */
     public Iterator<RecordId> scanAll(BaseTransaction transaction) {
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.S);
         return Collections.<RecordId>emptyIterator();
     }
 
@@ -252,7 +250,7 @@ public class BPlusTree implements Closeable {
      */
     public Iterator<RecordId> scanGreaterEqual(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.S);
         return Collections.<RecordId>emptyIterator();
     }
 
@@ -268,7 +266,7 @@ public class BPlusTree implements Closeable {
      */
     public void put(BaseTransaction transaction, DataBox key, RecordId rid) throws BPlusTreeException {
         typecheck(key);
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.X);
         return;
     }
 
@@ -289,7 +287,7 @@ public class BPlusTree implements Closeable {
      */
     public void bulkLoad(BaseTransaction transaction, Iterator<Pair<DataBox, RecordId>> data,
                          float fillFactor) throws BPlusTreeException {
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.X);
         return;
     }
 
@@ -307,7 +305,7 @@ public class BPlusTree implements Closeable {
      */
     public void remove(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.X);
         return;
     }
 
@@ -317,7 +315,7 @@ public class BPlusTree implements Closeable {
      * more information.
      */
     public String toSexp(BaseTransaction transaction) {
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.S);
         return root.toSexp(transaction);
     }
 
@@ -334,7 +332,7 @@ public class BPlusTree implements Closeable {
      * to create a PDF of the tree.
      */
     public String toDot(BaseTransaction transaction) {
-        // TODO(hw5_part2): B+ tree locking
+        LockUtil.ensureSufficientLockHeld(transaction, this.lockContext, LockType.S);
         List<String> strings = new ArrayList<>();
         strings.add("digraph g {" );
         strings.add("  node [shape=record, height=0.1];");
