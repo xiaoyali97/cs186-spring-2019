@@ -57,6 +57,18 @@ public class LockContext {
         this.childLocksDisabled = readonly;
     }
 
+    public boolean isPageContext() {
+        if (parent == null) {
+            return false;
+        } else {
+            return parent.parent != null;
+        }
+    }
+
+    public int getNumChildLocks(BaseTransaction transaction) {
+        return numChildLocks.getOrDefault(transaction.getTransNum(), 0);
+    }
+
     /**
      * Gets a lock context corresponding to NAME from a lock manager.
      */

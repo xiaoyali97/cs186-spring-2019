@@ -479,20 +479,24 @@ public class Table implements Closeable {
     }
 
     public RecordIterator iterator(BaseTransaction transaction) {
+        LockUtil.ensureSufficientLockHeld(transaction, lockContext, LockType.S);
         return new RecordIterator(transaction, this, ridIterator(transaction));
     }
 
     public BacktrackingIterator<Record> blockIterator(BaseTransaction transaction, Page[] block) {
+        LockUtil.ensureSufficientLockHeld(transaction, lockContext, LockType.S);
         return new RecordIterator(transaction, this, new RIDBlockIterator(transaction, block));
     }
 
     public BacktrackingIterator<Record> blockIterator(BaseTransaction transaction,
             BacktrackingIterator<Page> block) {
+        LockUtil.ensureSufficientLockHeld(transaction, lockContext, LockType.S);
         return new RecordIterator(transaction, this, new RIDBlockIterator(transaction, block));
     }
 
     public BacktrackingIterator<Record> blockIterator(BaseTransaction transaction, Iterator<Page> block,
             int maxRecords) {
+        LockUtil.ensureSufficientLockHeld(transaction, lockContext, LockType.S);
         return new RecordIterator(transaction, this, new RIDBlockIterator(transaction, block, maxRecords));
     }
 

@@ -30,6 +30,12 @@ public class LockUtil {
             return;
         }
 
+        if (qualifyAutoEscalate(transaction, lockContext)) {
+            lockContext.parent.escalate(transaction);
+            ensureSufficientLockHeld(transaction, lockContext, lockType);
+            return;
+        }
+
         //ensure parent has permission
         LockType requiredParentLock = LockType.parentLock(lockType);
         LockContext parentContext = lockContext.parentContext();
@@ -49,6 +55,19 @@ public class LockUtil {
                 lockContext.escalate(transaction);
                 ensureSufficientLockHeld(transaction, lockContext, lockType);
             }
+        }
+    }
+
+    private static boolean qualifyAutoEscalate(BaseTransaction transaction, LockContext lockContext) {
+        if (!lockContext.isPageContext()) {
+            return false;
+        }
+
+        if (lockContext.parent.capacity() >= 10 &&
+                lockContext.parent.getNumChildLocks(transaction) / (double)lockContext.parent.capacity() >= 0.2){
+            return true;
+        } else {
+            return false;
         }
     }
 }

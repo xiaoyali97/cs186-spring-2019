@@ -195,8 +195,6 @@ public class Database {
 
         public void end() {
             assert(this.active);
-
-            // TODO(hw5_part2): release all locks
             List<Lock> lockList = lockManager.getLocks(this);
             Collections.reverse(lockList);
             for (Lock lock: lockList) {
@@ -209,6 +207,7 @@ public class Database {
             Database.this.activeTransactions.remove(this.transNum);
         }
 
+
         /**
          * Create a new table in this database.
          *
@@ -220,7 +219,7 @@ public class Database {
             // TODO(hw5_part2): add DDL locking
 
             LockContext tableContext = getTableContext(tableName);
-
+            LockUtil.ensureSufficientLockHeld(this, tableContext, LockType.X);
             if (Database.this.tableLookup.containsKey(tableName)) {
                 throw new DatabaseException("Table name already exists");
             }
@@ -243,7 +242,7 @@ public class Database {
             // TODO(hw5_part2): add locking
 
             LockContext tableContext = getTableContext(tableName);
-
+            LockUtil.ensureSufficientLockHeld(this, tableContext, LockType.X);
             List<String> schemaColNames = s.getFieldNames();
             List<Type> schemaColType = s.getFieldTypes();
 
@@ -297,7 +296,7 @@ public class Database {
             if (!Database.this.tableLookup.containsKey(tableName)) {
                 return false;
             }
-
+            LockUtil.ensureSufficientLockHeld(this, getTableContext(tableName), LockType.X);
             Database.this.tableLookup.get(tableName).close();
             Database.this.tableLookup.remove(tableName);
 
@@ -325,8 +324,8 @@ public class Database {
         public void deleteAllTables() {
             // TODO(hw5_part2): add locking
 
+            LockUtil.ensureSufficientLockHeld(this, lockManager.databaseContext(), LockType.X);
             List<String> tableNames = new ArrayList<>(tableLookup.keySet());
-
             for (String s : tableNames) {
                 deleteTable(s);
             }
